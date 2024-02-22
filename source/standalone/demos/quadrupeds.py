@@ -49,7 +49,7 @@ from omni.isaac.orbit.assets import Articulation
 # Pre-defined configs
 ##
 from omni.isaac.orbit_assets.anymal import ANYMAL_B_CFG, ANYMAL_C_CFG, ANYMAL_D_CFG  # isort:skip
-from omni.isaac.orbit_assets.unitree import UNITREE_A1_CFG, UNITREE_GO1_CFG, UNITREE_GO2_CFG  # isort:skip
+from omni.isaac.orbit_assets.unitree import UNITREE_A1_CFG, UNITREE_GO1_CFG, UNITREE_GO2_CFG, WIDOW_GO1_CFG  # isort:skip
 
 
 def define_origins(num_origins: int, spacing: float) -> list[list[float]]:
@@ -78,7 +78,7 @@ def design_scene() -> tuple[dict, list[list[float]]]:
 
     # Create separate groups called "Origin1", "Origin2", "Origin3"
     # Each group will have a mount and a robot on top of it
-    origins = define_origins(num_origins=6, spacing=1.25)
+    origins = define_origins(num_origins=7, spacing=1.25)
 
     # Origin 1 with Anymal B
     prim_utils.create_prim("/World/Origin1", "Xform", translation=origins[0])
@@ -110,6 +110,10 @@ def design_scene() -> tuple[dict, list[list[float]]]:
     # -- Robot
     unitree_go2 = Articulation(UNITREE_GO2_CFG.replace(prim_path="/World/Origin6/Robot"))
 
+    # Origin 7 with Unitree Go1 + Widow
+    prim_utils.create_prim("/World/Origin7", "Xform", translation=origins[6])
+    widow_go1 = Articulation(WIDOW_GO1_CFG.replace(prim_path="/World/Origin7/Robot"))
+
     # return the scene information
     scene_entities = {
         "anymal_b": anymal_b,
@@ -118,6 +122,7 @@ def design_scene() -> tuple[dict, list[list[float]]]:
         "unitree_a1": unitree_a1,
         "unitree_go1": unitree_go1,
         "unitree_go2": unitree_go2,
+        "widow_go1": widow_go1
     }
     return scene_entities, origins
 
@@ -145,6 +150,8 @@ def run_simulator(sim: sim_utils.SimulationContext, entities: dict[str, Articula
                 joint_pos, joint_vel = robot.data.default_joint_pos.clone(), robot.data.default_joint_vel.clone()
                 robot.write_joint_state_to_sim(joint_pos, joint_vel)
                 # reset the internal state
+                # if index == 6:
+                #     import ipdb; ipdb.set_trace()
                 robot.reset()
             print("[INFO]: Resetting robots state...")
         # apply default actions to the quadrupedal robots

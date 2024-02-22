@@ -177,13 +177,13 @@ update_vscode_settings() {
     # retrieve the python executable
     python_exe=$(extract_python_exe)
     # path to setup_vscode.py
-    setup_vscode_script="${ORBIT_PATH}/.vscode/tools/setup_vscode.py"
+    # setup_vscode_script="${ORBIT_PATH}/.vscode/tools/setup_vscode.py"
     # check if the file exists before attempting to run it
-    if [ -f "${setup_vscode_script}" ]; then
-        ${python_exe} "${setup_vscode_script}"
-    else
-        echo "[WARNING] setup_vscode.py not found. Aborting vscode settings setup."
-    fi
+    #if [ -f "${setup_vscode_script}" ]; then
+    #    ${python_exe} "${setup_vscode_script}"
+    #else
+    #    echo "[WARNING] setup_vscode.py not found. Aborting vscode settings setup."
+    #fi
 }
 
 # print the usage description
