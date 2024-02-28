@@ -292,7 +292,8 @@ class RLTaskEnv(BaseEnv, gym.Env):
                     for term_name, term_dim in zip(group_term_names, group_term_dim)
                 })
         # action space (unbounded since we don't impose any limits)
-        action_dim = sum(self.action_manager.action_term_dim)
+        # action_dim = sum(self.action_manager.action_term_dim)
+        action_dim = 12
         self.single_action_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(action_dim,))
 
         # batch the spaces for vectorized environments
