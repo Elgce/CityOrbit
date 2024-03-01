@@ -65,7 +65,8 @@ class RslRlVecEnvWrapper(VecEnv):
         self.num_envs = self.unwrapped.num_envs
         self.device = self.unwrapped.device
         self.max_episode_length = self.unwrapped.max_episode_length
-        self.num_actions = self.unwrapped.action_manager.total_action_dim
+        # self.num_actions = self.unwrapped.action_manager.total_action_dim
+        self.num_actions = self.env.action_space.shape[1]
         self.num_obs = self.unwrapped.observation_manager.group_obs_dim["policy"][0]
         # -- privileged observations
         if "critic" in self.unwrapped.observation_manager.group_obs_dim:

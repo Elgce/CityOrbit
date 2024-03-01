@@ -47,7 +47,7 @@ from omni.isaac.orbit.utils.assets import ISAAC_NUCLEUS_DIR
 # Pre-defined configs
 ##
 from omni.isaac.orbit_assets import FRANKA_PANDA_CFG, UR10_CFG  # isort:skip
-
+from omni.isaac.orbit_assets import UNITREE_Z1_CFG
 
 def design_scene() -> tuple[dict, list[list[float]]]:
     """Designs the scene."""
@@ -60,7 +60,7 @@ def design_scene() -> tuple[dict, list[list[float]]]:
 
     # Create separate groups called "Origin1", "Origin2", "Origin3"
     # Each group will have a mount and a robot on top of it
-    origins = [[0.0, -1.0, 0.0], [0.0, 1.0, 0.0]]
+    origins = [[0.0, -1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 3.0, 0.0]]
 
     # Origin 1 with Franka Panda
     prim_utils.create_prim("/World/Origin1", "Xform", translation=origins[0])
@@ -84,8 +84,19 @@ def design_scene() -> tuple[dict, list[list[float]]]:
     ur10_cfg.init_state.pos = (0.0, 0.0, 1.03)
     robot_ur10 = Articulation(cfg=ur10_cfg)
 
+    # Origin 3 with Unitree Z1
+    prim_utils.create_prim("/World/Origin3", "Xform", translation=origins[2])
+    cfg = sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/Stand/stand_instanceable.usd", scale=(2.0, 2.0, 2.0)
+    )
+    cfg.func("/World/Origin3/Table", cfg, translation=(0.0, 0.0, 1.03))
+    # -- Robot
+    z1_cfg = UNITREE_Z1_CFG.replace(prim_path="/World/Origin3/Robot")
+    z1_cfg.init_state.pos = (0.0, 0.0, 1.03)
+    robot_z1 = Articulation(cfg=z1_cfg)
+
     # return the scene information
-    scene_entities = {"robot_franka": robot_franka, "robot_ur10": robot_ur10}
+    scene_entities = {"robot_franka": robot_franka, "robot_ur10": robot_ur10, "robot_z1": robot_z1}
     return scene_entities, origins
 
 

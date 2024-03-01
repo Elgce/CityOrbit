@@ -133,23 +133,57 @@ ALIENGO_Z1_CFG = ArticulationCfg(
     actuators={
         "base_legs": DCMotorCfg(
             joint_names_expr=[".*_hip_joint", ".*_thigh_joint", ".*_calf_joint"],
-            effort_limit=23.5,
-            saturation_effort=23.5,
+            effort_limit=40.0,
+            saturation_effort=40.0,
             velocity_limit=30.0,
-            stiffness=40.0,
+            stiffness=45.0,
             damping=2.0,
             friction=0.0,
         ),
-        # "z1_arms": DCMotorCfg(
-        #     joint_names_expr=["joint.*"],
-        #     effort_limit=23.5,
-        #     saturation_effort=23.5,
-        #     velocity_limit=10.0,
-        #     stiffness=5.0,
-        #     damping=0.5,
-        #     friction=0.0,
-        # )
+        "z1_arms": DCMotorCfg(
+            joint_names_expr=["joint.*"],
+            effort_limit=23.5,
+            saturation_effort=23.5,
+            velocity_limit=10.0,
+            stiffness=5.0,
+            damping=0.5,
+            friction=0.0,
+        )
     }
+)
+
+# add config for z1 manipulation here
+UNITREE_Z1_CFG = ArticulationCfg(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=f"{PE_ASSET_PATH}/z1.usd",
+        activate_contact_sensors=False,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            max_depenetration_velocity=5.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
+        ),
+    ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        joint_pos={
+            ".*": 0.0,
+        },
+        joint_vel={".*": 0.0}
+    ),
+    actuators={
+        "z1_arms": DCMotorCfg(
+            joint_names_expr=["joint.*"],
+            effort_limit=60.0,
+            saturation_effort=60.0,
+            velocity_limit=100.0,
+            stiffness=60.0,
+            damping=5.0,
+            # friction=0.0,
+        )
+    },
+    soft_joint_pos_limit_factor=1.0
+
 )
 
 # add widow_go1 for pure locomotion & manipulation here

@@ -213,6 +213,7 @@ class ManagerBase(ABC):
             if isinstance(value, SceneEntityCfg):
                 # load the entity
                 try:
+                    # import ipdb; ipdb.set_trace()
                     value.resolve(self._env.scene)
                 except ValueError as e:
                     raise ValueError(f"Error while parsing '{term_name}:{key}'. {e}")

@@ -160,6 +160,10 @@ class RLTaskEnv(BaseEnv, gym.Env):
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
         # process actions
+        # NOTE (elgceben): here we fix arm, which is not common for locomotion,
+        # only for Aliengo+Z1        
+        # action_arm = torch.zeros(self.num_envs, 7).to(self.device)
+        # action = torch.cat((action, action_arm), dim=1)
         self.action_manager.process_action(action)
         # perform physics stepping
         for _ in range(self.cfg.decimation):
@@ -292,8 +296,8 @@ class RLTaskEnv(BaseEnv, gym.Env):
                     for term_name, term_dim in zip(group_term_names, group_term_dim)
                 })
         # action space (unbounded since we don't impose any limits)
-        # action_dim = sum(self.action_manager.action_term_dim)
-        action_dim = 12
+        action_dim = sum(self.action_manager.action_term_dim)
+        # action_dim = 12
         self.single_action_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(action_dim,))
 
         # batch the spaces for vectorized environments

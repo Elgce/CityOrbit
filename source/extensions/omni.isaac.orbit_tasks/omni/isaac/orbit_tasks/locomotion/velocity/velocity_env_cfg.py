@@ -110,9 +110,13 @@ class ActionsCfg:
     """Action specifications for the MDP."""
 
     joint_pos = mdp.JointPositionActionCfg(asset_name="robot", 
-                                           joint_names=[".*_joint"], 
+                                           joint_names=[".*"], 
                                            scale=0.5, 
                                            use_default_offset=True)
+    # arm_joint_pos = mdp.JointPositionActionCfg(asset_name="robot", 
+    #                                        joint_names=["joint.*"], 
+    #                                        scale=0.5, 
+    #                                        use_default_offset=True)
 
 
 @configclass

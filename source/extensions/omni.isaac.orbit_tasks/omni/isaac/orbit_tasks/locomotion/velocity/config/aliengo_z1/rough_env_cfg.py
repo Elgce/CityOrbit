@@ -103,9 +103,9 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # terminations
         self.terminations.base_contact.params["sensor_cfg"].body_names = ".*(thigh|trunk)"
-        self.terminations.base_height = DoneTerm(
-            func=base_height_terminate, 
-        )
+        # self.terminations.base_height = DoneTerm(
+        #     func=base_height_terminate, 
+        # )
 
 
 @configclass
