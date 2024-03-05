@@ -106,7 +106,9 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.terminations.base_height = DoneTerm(
             func=base_height_terminate, 
         )
-
+        self.scene.terrain.terrain_type = "plane"
+        self.scene.terrain.terrain_generator = None
+        self.curriculum.terrain_levels = None
 
 @configclass
 class AliengoZ1RoughEnvCfg_PLAY(AliengoZ1RoughEnvCfg):
