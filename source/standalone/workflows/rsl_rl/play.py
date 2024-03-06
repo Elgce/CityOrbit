@@ -70,7 +70,7 @@ def main():
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
     # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
-    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-05_15-07-42/model_7600.pt"
+    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-06_10-32-39/model_30600.pt"
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model

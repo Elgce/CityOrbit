@@ -113,7 +113,7 @@ def main():
 
         # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
         # import ipdb; ipdb.set_trace()
-        resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-05_15-07-42/model_7600.pt"
+        resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-05_23-56-43/model_20600.pt"
         print(f"[INFO]: Loading model checkpoint from: {resume_path}")
         # load previously trained model
         runner.load(resume_path)

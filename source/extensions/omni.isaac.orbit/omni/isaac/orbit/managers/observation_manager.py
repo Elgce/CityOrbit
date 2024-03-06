@@ -167,6 +167,7 @@ class ObservationManager(ManagerBase):
         obs_terms = zip(group_term_names, self._group_obs_term_cfgs[group_name])
         # evaluate terms: compute, add noise, clip, scale.
         for name, term_cfg in obs_terms:
+            print(name)
             # compute term's value
             obs: torch.Tensor = term_cfg.func(self._env, **term_cfg.params)
             # apply post-processing
@@ -180,6 +181,7 @@ class ObservationManager(ManagerBase):
             # Ref: https://robosuite.ai/docs/modules/sensors.html#observables
             # add value to list
             group_obs[name] = obs
+        
         # concatenate all observations in the group together
         if self._group_obs_concatenate[group_name]:
             return torch.cat(list(group_obs.values()), dim=-1)

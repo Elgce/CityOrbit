@@ -76,7 +76,7 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         }
 
         # self-defined reward function
-        self.rewards.base_height = RewTerm(func=base_height_l1, weight=-0.2)
+        # self.rewards.base_height = RewTerm(func=base_height_l1, weight=-0.2)
         self.rewards.feet_air_time = RewTerm(
             func=mdp.feet_air_time,
             weight=0.5,
@@ -86,29 +86,36 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
                 "threshold": 0.5,
             },
         )
-        self.rewards.undesired_contacts = RewTerm(
-            func=mdp.undesired_contacts,
-            weight=-1.0,
-            params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*(thigh|calf)"), "threshold": 1.0},
-        )
-
+        # self.rewards.undesired_contacts = RewTerm(
+        #     func=mdp.undesired_contacts,
+        #     weight=-1.0,
+        #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*thigh"), "threshold": 1.0},
+        # )
+        self.rewards.undesired_contacts = None
         # rewards
         self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
         self.rewards.feet_air_time.weight = 0.01
-        self.rewards.undesired_contacts.weight = 0.01
+        # self.rewards.undesired_contacts.weight = -0.01
         self.rewards.dof_torques_l2.weight = -0.0002
         self.rewards.track_lin_vel_xy_exp.weight = 1.5
         self.rewards.track_ang_vel_z_exp.weight = 0.75
         self.rewards.dof_acc_l2.weight = -2.5e-7
-
+        # self.rewards.feet_air_time=None
+        # self.rewards.undesired_contacts.weight = -0.01
+        # self.rewards.dof_torques_l2=None
+        # self.rewards.track_lin_vel_xy_exp.weight = 1.5
+        # self.rewards.track_ang_vel_z_exp.weight = 0.75
+        # self.rewards.dof_acc_l2=None
+        # self.rewards.ang_vel_xy_l2=None
+        # self.rewards.action_rate_l2=None
         # terminations
-        self.terminations.base_contact.params["sensor_cfg"].body_names = ".*(thigh|trunk)"
-        self.terminations.base_height = DoneTerm(
-            func=base_height_terminate, 
-        )
-        self.scene.terrain.terrain_type = "plane"
-        self.scene.terrain.terrain_generator = None
-        self.curriculum.terrain_levels = None
+        self.terminations.base_contact.params["sensor_cfg"].body_names = ".*trunk"
+        # self.terminations.base_height = DoneTerm(
+        #     func=base_height_terminate, 
+        # )
+        # self.scene.terrain.terrain_type = "plane"
+        # self.scene.terrain.terrain_generator = None
+        # self.curriculum.terrain_levels = None
 
 @configclass
 class AliengoZ1RoughEnvCfg_PLAY(AliengoZ1RoughEnvCfg):
