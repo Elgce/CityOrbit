@@ -64,7 +64,7 @@ def joint_pos_rel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robo
     """The joint positions of the asset w.r.t. the default joint positions."""
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.joint_pos - asset.data.default_joint_pos
+    return (asset.data.joint_pos - asset.data.default_joint_pos)[:, :19]
 
 
 def joint_pos_norm(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
@@ -80,7 +80,7 @@ def joint_vel_rel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robo
     """The joint velocities of the asset w.r.t. the default joint velocities."""
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.joint_vel - asset.data.default_joint_vel
+    return (asset.data.joint_vel - asset.data.default_joint_vel)[:, :19]
 
 
 """

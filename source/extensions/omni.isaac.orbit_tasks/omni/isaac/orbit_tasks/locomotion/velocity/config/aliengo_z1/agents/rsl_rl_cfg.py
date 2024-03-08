@@ -15,7 +15,7 @@ from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
 @configclass
 class AliengoZ1RoughPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
-    max_iterations = 15000
+    max_iterations = 30000
     save_interval = 200
     experiment_name = "aliengo_z1_rough"
     empirical_normalization = False
@@ -46,7 +46,7 @@ class AliengoZ1FlatPPORunnerCfg(AliengoZ1RoughPPORunnerCfg):
     def __post_init__(self):
         super().__post_init__()
 
-        self.max_iterations = 15000
+        self.max_iterations = 30000
         self.experiment_name = "aliengo_z1_flat"
         self.policy.actor_hidden_dims = [128, 128, 128]
         self.policy.critic_hidden_dims = [128, 128, 128]
