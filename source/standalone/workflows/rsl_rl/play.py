@@ -70,7 +70,7 @@ def main():
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
     # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
-    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-07_23-07-30/model_40000.pt" # relatively, 40000 is best
+    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/last/model_29998.pt" # relatively, 40000 is best
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model
@@ -88,13 +88,24 @@ def main():
     # reset environment
     obs, _ = env.get_observations()
     # simulate environment
+    i = 0
     while simulation_app.is_running():
         # run everything in inference mode
         with torch.inference_mode():
+            i += 1
+            print(f"step{i}=================================================")
             # agent stepping
+            obs[:, 9:12] = 0.0
             actions = policy(obs)
+            print("base_lin_vel: ", obs[0, :3])
+            print("base_ang_vel: ", obs[0, 3:6])
+            print("projected_gravity: ", obs[0, 6:9])
+            print("joint pos: ", obs[0, 12:31])
+            print("joint vel: ", obs[0, 31:50])
+            # import ipdb; ipdb.set_trace()
             # env stepping
             obs, _, _, _ = env.step(actions)
+            print("action: ", actions[0])
 
     # close the simulator
     env.close()

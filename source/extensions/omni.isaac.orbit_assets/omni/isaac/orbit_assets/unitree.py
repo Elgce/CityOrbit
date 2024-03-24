@@ -101,8 +101,8 @@ Note: Specifications taken from: https://www.trossenrobotics.com/a1-quadruped#sp
 # add aliengo_z1 for locomotion & manipulation here
 ALIENGO_Z1_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        # usd_path=f"{PE_ASSET_PATH}/aliengoZ1.usd",
-        usd_path=f"{PE_ASSET_PATH}/aa.usd",
+        usd_path=f"{PE_ASSET_PATH}/aliengoZ1.usd",
+        # usd_path=f"{PE_ASSET_PATH}/aa.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
