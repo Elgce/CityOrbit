@@ -134,6 +134,8 @@ class JointPositionAction(JointAction):
 
     def apply_actions(self):
         # set position targets
+        print(" is position action")
+        import ipdb; ipdb.set_trace()
         self._asset.set_joint_position_target(self.processed_actions, joint_ids=self._joint_ids)
 
 

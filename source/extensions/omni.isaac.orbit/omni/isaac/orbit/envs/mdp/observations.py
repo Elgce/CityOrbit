@@ -18,7 +18,7 @@ import omni.isaac.orbit.utils.math as math_utils
 from omni.isaac.orbit.assets import Articulation, RigidObject
 from omni.isaac.orbit.managers import SceneEntityCfg
 from omni.isaac.orbit.sensors import RayCaster
-
+from omni.isaac.orbit.envs.mdp.traj_generator import TrajGenerator
 if TYPE_CHECKING:
     from omni.isaac.orbit.envs import BaseEnv, RLTaskEnv
 
@@ -90,12 +90,13 @@ def h1_traj_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"
     
     root_states = asset.data.root_state_w.clone()
     import ipdb; ipdb.set_trace()
-    traj_samples = fetch_traj_samples()
+    traj_samples = fetch_traj_samples(env, )
     
     
     return asset.data.default_joint_pos
 
-def fetch_traj_samples(env: BaseEnv, progress_buf):
+def fetch_traj_samples(env: BaseEnv, progress_buf, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"), ):
+    asset: Articulation = env.scene[asset_cfg.name]
     numTrajSamples = 10
     trajSampleTimestep = 0.5
     timestep_beg = progress_buf * 0.02
@@ -104,8 +105,17 @@ def fetch_traj_samples(env: BaseEnv, progress_buf):
     timesteps = timesteps * trajSampleTimestep
     traj_timesteps = timestep_beg.unsqueeze(-1) + timesteps
     env_ids_tiled = torch.broadcast_to(env_ids.unsqueeze(-1), traj_timesteps.shape)
-    traj_samples_flat = 
-
+    traj_gen = TrajGenerator(
+        env.num_envs, 300, 101,
+        "cuda:0", 2.0,
+        0, 2, 1, 0.02
+    )
+    root_pos = asset.data.root_pos_w
+    traj_gen.reset(torch.arange(env.num_envs), root_pos)
+    traj_samples_flat = traj_gen.calc_pos(env_ids_tiled.flatten(), traj_timesteps.flatten())
+    traj_samples = torch.reshape(traj_samples_flat, shape=(env_ids.shape[0], numTrajSamples, traj_samples_flat.shape[-1]))
+    return traj_samples
+    
 """
 Joint state.
 """
