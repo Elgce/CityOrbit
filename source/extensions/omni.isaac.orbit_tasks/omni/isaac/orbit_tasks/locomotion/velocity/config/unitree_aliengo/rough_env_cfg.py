@@ -10,7 +10,7 @@ from omni.isaac.orbit.envs import RLTaskEnv
 ##
 # Pre-defined configs
 ##
-from omni.isaac.orbit_assets.unitree import ALIENGO_Z1_CFG  # isort: skip
+from omni.isaac.orbit_assets.unitree import UNITREE_ALIENGO_CFG  # isort: skip
 from omni.isaac.orbit.managers import RewardTermCfg as RewTerm
 from omni.isaac.orbit.managers import TerminationTermCfg as DoneTerm
 
@@ -42,12 +42,12 @@ def base_height_terminate(
     
 
 @configclass
-class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
+class UnitreeAliengoRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
 
-        self.scene.robot = ALIENGO_Z1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = UNITREE_ALIENGO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"
         # scale down the terrains because the robot is small
         self.scene.terrain.terrain_generator.sub_terrains["boxes"].grid_height_range = (0.025, 0.1)
@@ -118,7 +118,7 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.curriculum.terrain_levels = None
 
 @configclass
-class AliengoZ1RoughEnvCfg_PLAY(AliengoZ1RoughEnvCfg):
+class UnitreeAliengoRoughEnvCfg_PLAY(UnitreeAliengoRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()

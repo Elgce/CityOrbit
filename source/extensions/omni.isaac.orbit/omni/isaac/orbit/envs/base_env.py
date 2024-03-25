@@ -96,6 +96,7 @@ class BaseEnv:
         # initialize internal variables
         self._is_closed = False
 
+        
         # create a simulation context to control the simulator
         if SimulationContext.instance() is None:
             self.sim = SimulationContext(self.cfg.sim)

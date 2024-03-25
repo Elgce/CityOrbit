@@ -55,6 +55,57 @@ def projected_gravity(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("
     return asset.data.projected_gravity_b
 
 
+# define observations for h1
+def h1_root_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.root_pos_w[:, :]
+
+def h1_root_rot(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    import ipdb; ipdb.set_trace()
+    return asset.data.root_quat_w[:, :]
+
+def h1_root_lin_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.root_lin_vel_w[:, :]
+
+def h1_root_ang_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.root_ang_vel_w[:, :]
+
+def h1_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.joint_pos - asset.data.default_joint_pos
+
+def h1_dof_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.joint_vel
+
+def h1_default_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    return asset.data.default_joint_pos
+
+def h1_traj_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    asset: Articulation = env.scene[asset_cfg.name]
+    
+    root_states = asset.data.root_state_w.clone()
+    import ipdb; ipdb.set_trace()
+    traj_samples = fetch_traj_samples()
+    
+    
+    return asset.data.default_joint_pos
+
+def fetch_traj_samples(env: BaseEnv, progress_buf):
+    numTrajSamples = 10
+    trajSampleTimestep = 0.5
+    timestep_beg = progress_buf * 0.02
+    timesteps = torch.arange(numTrajSamples, dtype=torch.float)
+    env_ids = torch.arange(env.num_envs, dtype=torch.long)
+    timesteps = timesteps * trajSampleTimestep
+    traj_timesteps = timestep_beg.unsqueeze(-1) + timesteps
+    env_ids_tiled = torch.broadcast_to(env_ids.unsqueeze(-1), traj_timesteps.shape)
+    traj_samples_flat = 
+
 """
 Joint state.
 """

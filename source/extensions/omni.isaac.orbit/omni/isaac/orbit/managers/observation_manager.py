@@ -171,6 +171,7 @@ class ObservationManager(ManagerBase):
             # compute term's value
             obs: torch.Tensor = term_cfg.func(self._env, **term_cfg.params)
             # apply post-processing
+            
             if term_cfg.noise:
                 obs = term_cfg.noise.func(obs, term_cfg.noise)
             if term_cfg.clip:

@@ -21,7 +21,7 @@ import cli_args  # isort: skip
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
 parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU pipeline.")
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-H1-v0", help="Name of the task.")
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
@@ -56,19 +56,11 @@ from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
 
 def main():
     """Play with RSL-RL agent."""
-    # parse configuration
     env_cfg = parse_env_cfg(args_cli.task, use_gpu=not args_cli.cpu, num_envs=args_cli.num_envs)
     agent_cfg: RslRlOnPolicyRunnerCfg = cli_args.parse_rsl_rl_cfg(args_cli.task, args_cli)
-    # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg)
-    # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env)
-    # specify directory for logging experiments
-    log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
-    log_root_path = os.path.abspath(log_root_path)
-    print(f"[INFO] Loading experiment from directory: {log_root_path}")
-    # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
-    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-24_16-28-19_locomotion/model_17400.pt" # relatively, 40000 is best
+    resume_path = "/home/elgceben/orbit/logs/H1/Humanoid.pt"
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model
@@ -87,26 +79,14 @@ def main():
     obs, _ = env.get_observations()
     # simulate environment
     i = 0
-    action_save = []
     while simulation_app.is_running():
         # run everything in inference mode
         with torch.inference_mode():
             i += 1
-            print(f"step{i}=================================================")
-            # agent stepping
             actions = policy(obs)
-            print("base_lin_vel: ", obs[0, :3])
-            print("base_ang_vel: ", obs[0, 3:6])
-            print("projected_gravity: ", obs[0, 6:9])
-            print("joint pos: ", obs[0, 12:31])
-            print("joint vel: ", obs[0, 31:50])
-            # import ipdb; ipdb.set_trace()
-            # env stepping
+
             obs, _, _, _ = env.step(actions)
-            print("action: ", actions[0])
-            action_save.append(actions[0].cpu().numpy())
-            if i == 200:
-                np.save("action.npy", np.array(action_save))
+
 
     # close the simulator
     env.close()
