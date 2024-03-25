@@ -112,6 +112,7 @@ class IdealPDActuator(ActuatorBase):
         # compute errors
         error_pos = control_action.joint_positions - joint_pos
         error_vel = control_action.joint_velocities - joint_vel
+        # import ipdb; ipdb.set_trace()
         # calculate the desired joint torques
         self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
         # clip the torques based on the motor limits
