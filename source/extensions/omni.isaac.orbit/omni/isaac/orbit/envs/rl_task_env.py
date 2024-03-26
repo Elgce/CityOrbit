@@ -178,10 +178,12 @@ class RLTaskEnv(BaseEnv, gym.Env):
         for _ in range(self.cfg.decimation):
             # set actions into buffers
             self.action_manager.apply_action()
+            self.scene.write_data_to_sim()
+
             # set actions into simulator
-        self.scene.write_data_to_sim()
-            # simulate
         self.sim.step(render=False)
+
+            # simulate
             # update buffers at sim dt
             # import ipdb; ipdb.set_trace()
         self.scene.update(dt=self.physics_dt)
