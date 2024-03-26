@@ -84,7 +84,7 @@ def main():
         with torch.inference_mode():
             i += 1
             actions = policy(obs)
-
+            # import ipdb; ipdb.set_trace()
             obs, _, _, _ = env.step(actions)
 
 

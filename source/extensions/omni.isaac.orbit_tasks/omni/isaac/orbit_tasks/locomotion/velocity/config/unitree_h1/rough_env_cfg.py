@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2024, The ORBIT Project Developers.
+"""  """# Copyright (c) 2022-2024, The ORBIT Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -10,7 +10,7 @@ from omni.isaac.orbit.envs import RLTaskEnv
 ##
 # Pre-defined configs
 ##
-from omni.isaac.orbit_assets.unitree import UNITREE_H1_CFG  # isort: skip
+from omni.isaac.orbit_assets.unitree import UNITREE_H1_CFG # isort: skip
 from omni.isaac.orbit.managers import RewardTermCfg as RewTerm
 from omni.isaac.orbit.managers import TerminationTermCfg as DoneTerm
 
@@ -26,21 +26,21 @@ class UnitreeH1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
-
         self.scene.robot = UNITREE_H1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"
+        # self.scene.height_scanner = None
+        self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/pelvis"
         # scale down the terrains because the robot is small
         self.scene.terrain.terrain_generator.sub_terrains["boxes"].grid_height_range = (0.025, 0.1)
         self.scene.terrain.terrain_generator.sub_terrains["random_rough"].noise_range = (0.01, 0.06)
         self.scene.terrain.terrain_generator.sub_terrains["random_rough"].noise_step = 0.01
-
+        self.rewards.feet_air_time = None
+        self.rewards.undesired_contacts = None
         # reduce action scale
         self.actions.joint_pos.scale = 0.25
-        # randomization
         self.randomization.push_robot = None
         self.randomization.add_base_mass.params["mass_range"] = (-1.0, 3.0)
-        self.randomization.add_base_mass.params["asset_cfg"].body_names = "trunk"
-        self.randomization.base_external_force_torque.params["asset_cfg"].body_names = "trunk"
+        self.randomization.add_base_mass.params["asset_cfg"].body_names = "pelvis"
+        self.randomization.base_external_force_torque.params["asset_cfg"].body_names = "pelvis"
         self.randomization.reset_robot_joints.params["position_range"] = (1.0, 1.0)
         self.randomization.reset_base.params = {
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
@@ -53,7 +53,8 @@ class UnitreeH1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
                 "yaw": (0.0, 0.0),
             },
         }
-        self.terminations = None
+        self.terminations.base_contact.params["sensor_cfg"].body_names = "pelvis"
+        # self.terminations = None
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
         self.curriculum.terrain_levels = None

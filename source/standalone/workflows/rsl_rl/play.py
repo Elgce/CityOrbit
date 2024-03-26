@@ -102,6 +102,7 @@ def main():
             print("joint vel: ", obs[0, 31:50])
             # import ipdb; ipdb.set_trace()
             # env stepping
+            import ipdb; ipdb.set_trace()
             obs, _, _, _ = env.step(actions)
             print("action: ", actions[0])
             action_save.append(actions[0].cpu().numpy())

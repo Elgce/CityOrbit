@@ -124,22 +124,8 @@ class ObservationsCfg:
         """Observations for policy group."""
 
         # observation terms (order preserved)
-        root_pos = ObsTerm(func=mdp.h1_root_pos)
-        root_rot = ObsTerm(func=mdp.h1_root_rot)
-        
-        base_lin_vel = ObsTerm(func=mdp.h1_root_lin_vel)
-        base_ang_vel = ObsTerm(func=mdp.h1_root_ang_vel)
-        
-        joint_pos = ObsTerm(func=mdp.h1_dof_pos)
-        joint_vel = ObsTerm(func=mdp.h1_dof_vel)
-        
+        robot_obs = ObsTerm(func=mdp.process_h1_obs)
         actions = ObsTerm(func=mdp.last_action)
-        projected_gravity = ObsTerm(
-            func=mdp.projected_gravity,
-        )
-        default_dof_pos = ObsTerm(
-            func=mdp.h1_default_dof_pos,
-        )
         task_obs = ObsTerm(func=mdp.h1_traj_obs)
 
         def __post_init__(self):

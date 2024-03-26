@@ -116,7 +116,10 @@ class JointAction(ActionTerm):
         # store the raw actions
         self._raw_actions[:] = actions
         # apply the affine transformations
-        self._processed_actions = self._raw_actions * self._scale + self._offset
+        
+        # TODO(add limits here)
+        # self._processed_actions = self._raw_actions * self._scale + self._offset
+        self._processed_actions = self._raw_actions
 
 
 class JointPositionAction(JointAction):
@@ -134,8 +137,6 @@ class JointPositionAction(JointAction):
 
     def apply_actions(self):
         # set position targets
-        print(" is position action")
-        import ipdb; ipdb.set_trace()
         self._asset.set_joint_position_target(self.processed_actions, joint_ids=self._joint_ids)
 
 

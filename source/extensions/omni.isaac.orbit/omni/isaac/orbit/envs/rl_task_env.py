@@ -160,6 +160,12 @@ class RLTaskEnv(BaseEnv, gym.Env):
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
         # process actions
+        
+        dof_limits = self.scene["robot"].data.soft_joint_pos_limits
+        pd_action_offset = (dof_limits[..., 1] + dof_limits[..., 0]) / 2
+        pd_action_scale = (dof_limits[..., 1] - dof_limits[..., 0]) / 2
+        action = pd_action_scale * action + pd_action_offset
+        
         self.action_manager.process_action(action)
         # perform physics stepping
         for _ in range(self.cfg.decimation):

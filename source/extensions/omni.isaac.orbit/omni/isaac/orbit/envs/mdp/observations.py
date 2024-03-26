@@ -19,6 +19,7 @@ from omni.isaac.orbit.assets import Articulation, RigidObject
 from omni.isaac.orbit.managers import SceneEntityCfg
 from omni.isaac.orbit.sensors import RayCaster
 from omni.isaac.orbit.envs.mdp.traj_generator import TrajGenerator
+from omni.isaac.orbit.utils import torch_utils
 if TYPE_CHECKING:
     from omni.isaac.orbit.envs import BaseEnv, RLTaskEnv
 
@@ -62,7 +63,6 @@ def h1_root_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"
 
 def h1_root_rot(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    import ipdb; ipdb.set_trace()
     return asset.data.root_quat_w[:, :]
 
 def h1_root_lin_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
@@ -75,7 +75,7 @@ def h1_root_ang_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("ro
 
 def h1_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.joint_pos - asset.data.default_joint_pos
+    return asset.data.joint_pos
 
 def h1_dof_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
@@ -85,23 +85,43 @@ def h1_default_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg(
     asset: Articulation = env.scene[asset_cfg.name]
     return asset.data.default_joint_pos
 
-def h1_traj_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    asset: Articulation = env.scene[asset_cfg.name]
+def process_h1_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    root_pos = h1_root_pos(env, asset_cfg)
+    root_rot = h1_root_rot(env, asset_cfg)
+    heading_rot = torch_utils.calc_heading_quat_inv(root_rot)
+    root_lin_vel = h1_root_lin_vel(env, asset_cfg)
+    root_ang_vel = h1_root_ang_vel(env, asset_cfg)
+
+    local_root_vel = torch_utils.my_quat_rotate(heading_rot, root_lin_vel)
+    local_root_ang_vel = torch_utils.my_quat_rotate(heading_rot, root_ang_vel)
+    dof_pos = h1_dof_pos(env, asset_cfg)
+    dof_vel = h1_dof_vel(env, asset_cfg)
+    default_dof_pos = h1_default_dof_pos(env, asset_cfg)
+    local_dof_pos = dof_pos - default_dof_pos
+    gravity = projected_gravity(env, asset_cfg)
+    gravity = torch_utils.my_quat_rotate(heading_rot, gravity)
     
-    root_states = asset.data.root_state_w.clone()
-    import ipdb; ipdb.set_trace()
-    traj_samples = fetch_traj_samples(env, )
+    # dof_pos_limit = asset.data.soft_joint_pos_limits
+    obs = torch.cat([local_root_vel, local_root_ang_vel, local_dof_pos, dof_vel, gravity], dim=-1)
+    return obs
     
     
-    return asset.data.default_joint_pos
+
+def h1_traj_obs(env: RLTaskEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    if not hasattr(env, "episode_length_buf"):
+        process_time = torch.zeros(env.num_envs, device=env.device)
+    else:
+        process_time = env.episode_length_buf
+    traj_samples = fetch_traj_samples(env, process_time, asset_cfg)
+    return traj_samples
 
 def fetch_traj_samples(env: BaseEnv, progress_buf, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"), ):
     asset: Articulation = env.scene[asset_cfg.name]
     numTrajSamples = 10
     trajSampleTimestep = 0.5
     timestep_beg = progress_buf * 0.02
-    timesteps = torch.arange(numTrajSamples, dtype=torch.float)
-    env_ids = torch.arange(env.num_envs, dtype=torch.long)
+    timesteps = torch.arange(numTrajSamples, dtype=torch.float, device=env.device)
+    env_ids = torch.arange(env.num_envs, dtype=torch.long, device=env.device)
     timesteps = timesteps * trajSampleTimestep
     traj_timesteps = timestep_beg.unsqueeze(-1) + timesteps
     env_ids_tiled = torch.broadcast_to(env_ids.unsqueeze(-1), traj_timesteps.shape)
@@ -114,7 +134,22 @@ def fetch_traj_samples(env: BaseEnv, progress_buf, asset_cfg: SceneEntityCfg = S
     traj_gen.reset(torch.arange(env.num_envs), root_pos)
     traj_samples_flat = traj_gen.calc_pos(env_ids_tiled.flatten(), traj_timesteps.flatten())
     traj_samples = torch.reshape(traj_samples_flat, shape=(env_ids.shape[0], numTrajSamples, traj_samples_flat.shape[-1]))
-    return traj_samples
+    
+    root_rot = asset.data.root_quat_w
+    heading_rot = torch_utils.calc_heading_quat_inv(root_rot)
+
+    heading_rot_exp = torch.broadcast_to(heading_rot.unsqueeze(-2), (heading_rot.shape[0], traj_samples.shape[1], heading_rot.shape[1]))
+    heading_rot_exp = torch.reshape(heading_rot_exp, (heading_rot_exp.shape[0] * heading_rot_exp.shape[1], heading_rot_exp.shape[2]))
+    traj_samples_delta = traj_samples - root_pos.unsqueeze(-2)
+    traj_samples_delta_flat = torch.reshape(traj_samples_delta, (traj_samples_delta.shape[0] * traj_samples_delta.shape[1],
+                                                                 traj_samples_delta.shape[2]))
+
+    local_traj_pos = torch_utils.my_quat_rotate(heading_rot_exp, traj_samples_delta_flat)
+    local_traj_pos = local_traj_pos[..., 0:2]
+
+    obs = torch.reshape(local_traj_pos, (traj_samples.shape[0], traj_samples.shape[1] * local_traj_pos.shape[1]))
+    return obs
+    # return traj_samples
     
 """
 Joint state.

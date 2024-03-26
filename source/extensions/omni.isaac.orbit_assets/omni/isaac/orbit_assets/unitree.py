@@ -199,7 +199,7 @@ UNITREE_ALIENGO_CFG = ArticulationCfg(
 
 UNITREE_H1_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{PE_ASSET_PATH}/H1.usd",
+        usd_path=f"{PE_ASSET_PATH}/h1.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -211,75 +211,57 @@ UNITREE_H1_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=4, solver_velocity_iteration_count=0
+            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.4),
+        pos=(0.0, 0.0, 1.0),
         joint_pos={
+            '.*knee_joint': 0.8,
+            '.*ankle_joint': -0.4,
+            '.*hip_pitch_joint': -0.4,
             'left_hip_yaw_joint' : 0. ,   
             'left_hip_roll_joint' : 0,               
-            'left_hip_pitch_joint' : -0.4,         
-            'left_knee_joint' : 0.8,       
-            'left_ankle_joint' : -0.4,     
             'right_hip_yaw_joint' : 0., 
             'right_hip_roll_joint' : 0, 
-            'right_hip_pitch_joint' : -0.4,                                       
-            'right_knee_joint' : 0.8,                                             
-            'right_ankle_joint' : -0.4,                                     
             'torso_joint' : 0., 
             'left_shoulder_pitch_joint' : 0., 
             'left_shoulder_roll_joint' : 0, 
             'left_shoulder_yaw_joint' : 0.,
             'left_elbow_joint'  : 0.,
-            'left_hand_joint': 0.,
             'right_shoulder_pitch_joint' : 0.,
             'right_shoulder_roll_joint' : 0.0,
             'right_shoulder_yaw_joint' : 0.,
             'right_elbow_joint' : 0.,
-            'right_hand_joint': 0.,
         },
-        joint_vel={".*": 0.0}
+        joint_vel={".*": 0.0},
     ),
     soft_joint_pos_limit_factor=0.9,
     actuators={
-        "hip": DCMotorCfg(
-            joint_names_expr=[".*hip.*"],
-            effort_limit=200.,
-            saturation_effort=200.,
+        "base_legs": DCMotorCfg(
+            joint_names_expr=[".*"],
+            effort_limit=400.0,
+            saturation_effort=400.0,
             velocity_limit=30.0,
-            stiffness=200.0,
-            damping=5.0,
+            stiffness={
+                ".*hip.*": 200,
+                ".*knee.*": 300,
+                ".*ankle.*": 40,
+                "torso_joint": 300,
+                ".*shoulder.*": 100,
+                ".*elbow.*": 100
+            },
+            damping={
+                ".*hip.*": 5,
+                ".*knee.*": 6,
+                ".*ankle.*": 2,
+                "torso_joint": 6,
+                ".*shoulder.*": 2,
+                ".*elbow.*": 2
+            },
             friction=0.0,
         ),
-        "knee_torso": DCMotorCfg(
-            joint_names_expr=["torso.*", ".*knee.*"],
-            effort_limit=300.,
-            saturation_effort=300.,
-            velocity_limit=30.0,
-            stiffness=300.,
-            damping=6.0,
-            friction=0.0,
-        ),
-        "ankle": DCMotorCfg(
-            joint_names_expr=[".*ankle.*"],
-            effort_limit=40.,
-            saturation_effort=40.,
-            velocity_limit=40.0,
-            stiffness=40.0,
-            damping=2.0,
-            friction=0.0,
-        ),
-        "shoulder_elbow": DCMotorCfg(
-            joint_names_expr=[".*shoulder.*", ".*elbow.*"],
-            effort_limit=100.,
-            saturation_effort=100.,
-            velocity_limit=30.0,
-            stiffness=100.0,
-            damping=2.0,
-            friction=0.0,
-        ),
-    }
+    },
 )
 
 # add widow_go1 for pure locomotion & manipulation here
