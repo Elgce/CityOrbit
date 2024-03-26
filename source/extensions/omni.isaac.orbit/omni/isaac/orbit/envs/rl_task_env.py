@@ -92,6 +92,11 @@ class RLTaskEnv(BaseEnv, gym.Env):
         # -- init buffers
         self.episode_length_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
+        self.sim_index_in_sim = [0.] * 19
+        tmp_index = [0, 3, 7, 12, 15, 1, 4, 8, 11, 16, 2, 5, 9, 13, 17, 6, 10, 14, 18]
+        for item in range(19):
+            self.sim_index_in_sim[tmp_index[item]] = item
+        
         # setup the action and observation spaces for Gym
         self._configure_gym_env_spaces()
         # perform randomization at the start of the simulation
@@ -160,11 +165,13 @@ class RLTaskEnv(BaseEnv, gym.Env):
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
         # process actions
-        
+        action = action[:, self.sim_index_in_sim]
         dof_limits = self.scene["robot"].data.soft_joint_pos_limits
         pd_action_offset = (dof_limits[..., 1] + dof_limits[..., 0]) / 2
         pd_action_scale = (dof_limits[..., 1] - dof_limits[..., 0]) / 2
         action = pd_action_scale * action + pd_action_offset
+        
+        
         
         self.action_manager.process_action(action)
         # perform physics stepping
@@ -172,11 +179,12 @@ class RLTaskEnv(BaseEnv, gym.Env):
             # set actions into buffers
             self.action_manager.apply_action()
             # set actions into simulator
-            self.scene.write_data_to_sim()
+        self.scene.write_data_to_sim()
             # simulate
-            self.sim.step(render=False)
+        self.sim.step(render=False)
             # update buffers at sim dt
-            self.scene.update(dt=self.physics_dt)
+            # import ipdb; ipdb.set_trace()
+        self.scene.update(dt=self.physics_dt)
         # perform rendering if gui is enabled
         if self.sim.has_gui():
             self.sim.render()

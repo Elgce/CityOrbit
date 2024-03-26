@@ -26,7 +26,14 @@ if TYPE_CHECKING:
 """
 Root state.
 """
+traj_gen = TrajGenerator(
+        1, 300, 101,
+        "cuda:0", 2.0,
+        0, 2, 1, 0.02
+    )
+traj_gen.reset(torch.arange(1, device="cuda:0"), torch.tensor([0, 0, 1], device="cuda:0", dtype=torch.float))
 
+gym_index_in_sim = [0, 3, 7, 12, 15, 1, 4, 8, 11, 16, 2, 5, 9, 13, 17, 6, 10, 14, 18]
 
 def base_pos_z(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Root height in the simulation world frame."""
@@ -67,6 +74,7 @@ def h1_root_rot(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"
 
 def h1_root_lin_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
+    
     return asset.data.root_lin_vel_w[:, :]
 
 def h1_root_ang_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
@@ -75,19 +83,19 @@ def h1_root_ang_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("ro
 
 def h1_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.joint_pos
+    return asset.data.joint_pos[:, gym_index_in_sim]
 
 def h1_dof_vel(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.joint_vel
+    return asset.data.joint_vel[:, gym_index_in_sim]
 
 def h1_default_dof_pos(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     asset: Articulation = env.scene[asset_cfg.name]
-    return asset.data.default_joint_pos
+    return asset.data.default_joint_pos[:, gym_index_in_sim]
 
 def process_h1_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     root_pos = h1_root_pos(env, asset_cfg)
-    root_rot = h1_root_rot(env, asset_cfg)
+    root_rot = h1_root_rot(env, asset_cfg)[:, [1, 2, 3, 0]]
     heading_rot = torch_utils.calc_heading_quat_inv(root_rot)
     root_lin_vel = h1_root_lin_vel(env, asset_cfg)
     root_ang_vel = h1_root_ang_vel(env, asset_cfg)
@@ -100,7 +108,6 @@ def process_h1_obs(env: BaseEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("rob
     local_dof_pos = dof_pos - default_dof_pos
     gravity = projected_gravity(env, asset_cfg)
     gravity = torch_utils.my_quat_rotate(heading_rot, gravity)
-    
     # dof_pos_limit = asset.data.soft_joint_pos_limits
     obs = torch.cat([local_root_vel, local_root_ang_vel, local_dof_pos, dof_vel, gravity], dim=-1)
     return obs
@@ -125,17 +132,12 @@ def fetch_traj_samples(env: BaseEnv, progress_buf, asset_cfg: SceneEntityCfg = S
     timesteps = timesteps * trajSampleTimestep
     traj_timesteps = timestep_beg.unsqueeze(-1) + timesteps
     env_ids_tiled = torch.broadcast_to(env_ids.unsqueeze(-1), traj_timesteps.shape)
-    traj_gen = TrajGenerator(
-        env.num_envs, 300, 101,
-        "cuda:0", 2.0,
-        0, 2, 1, 0.02
-    )
+    
     root_pos = asset.data.root_pos_w
-    traj_gen.reset(torch.arange(env.num_envs), root_pos)
     traj_samples_flat = traj_gen.calc_pos(env_ids_tiled.flatten(), traj_timesteps.flatten())
     traj_samples = torch.reshape(traj_samples_flat, shape=(env_ids.shape[0], numTrajSamples, traj_samples_flat.shape[-1]))
     
-    root_rot = asset.data.root_quat_w
+    root_rot = asset.data.root_quat_w[:, [1, 2, 3, 0]]
     heading_rot = torch_utils.calc_heading_quat_inv(root_rot)
 
     heading_rot_exp = torch.broadcast_to(heading_rot.unsqueeze(-2), (heading_rot.shape[0], traj_samples.shape[1], heading_rot.shape[1]))
@@ -213,7 +215,7 @@ Actions.
 
 def last_action(env: BaseEnv) -> torch.Tensor:
     """The last input action to the environment."""
-    return env.action_manager.action
+    return env.action_manager.action[:, gym_index_in_sim]
 
 
 """
