@@ -10,7 +10,7 @@ from omni.isaac.orbit_tasks.locomotion.velocity.velocity_env_cfg import Locomoti
 ##
 # Pre-defined configs
 ##
-from omni.isaac.orbit_assets.unitree import UNITREE_GO1_CFG  # isort: skip
+from omni.isaac.orbit_assets.unitree import UNITREE_ALIENGO_CFG  # isort: skip
 
 
 @configclass
@@ -19,7 +19,7 @@ class UnitreeAliengoRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         # post init of parent
         super().__post_init__()
 
-        self.scene.robot = UNITREE_GO1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = UNITREE_ALIENGO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"
         # scale down the terrains because the robot is small
         self.scene.terrain.terrain_generator.sub_terrains["boxes"].grid_height_range = (0.025, 0.1)
@@ -28,7 +28,6 @@ class UnitreeAliengoRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # reduce action scale
         self.actions.joint_pos.scale = 0.25
-
         # randomization
         self.randomization.push_robot = None
         self.randomization.add_base_mass.params["mass_range"] = (-1.0, 3.0)

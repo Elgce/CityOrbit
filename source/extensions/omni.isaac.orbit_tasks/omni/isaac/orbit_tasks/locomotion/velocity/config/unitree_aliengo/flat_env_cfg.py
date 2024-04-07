@@ -26,6 +26,12 @@ class UnitreeAliengoFlatEnvCfg(UnitreeAliengoRoughEnvCfg):
         self.observations.policy.height_scan = None
         # no terrain curriculum
         self.curriculum.terrain_levels = None
+        self.randomization.add_base_mass = None
+        self.randomization.base_external_force_torque = None
+        self.randomization.physics_material = None
+        self.randomization.push_robot = None
+        self.randomization.reset_base = None
+        self.randomization.reset_robot_joints = None
 
 
 class UnitreeAliengoFlatEnvCfg_PLAY(UnitreeAliengoFlatEnvCfg):

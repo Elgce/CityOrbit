@@ -52,7 +52,7 @@ This model is taken from: https://github.com/Improbable-AI/walk-these-ways
 ##
 UNITREE_ALIENGO_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_ORBIT_NUCLEUS_DIR}/Robots/Unitree/A1/aliengo.usd",
+        usd_path=f"/home/elgceben/orbit/source/extensions/omni.isaac.orbit_assets/omni/isaac/orbit_assets/assets/aliengo.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,

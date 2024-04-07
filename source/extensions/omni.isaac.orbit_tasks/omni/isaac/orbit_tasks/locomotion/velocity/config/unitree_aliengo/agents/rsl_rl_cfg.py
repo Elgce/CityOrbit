@@ -48,5 +48,5 @@ class UnitreeAliengoFlatPPORunnerCfg(UnitreeAliengoRoughPPORunnerCfg):
 
         self.max_iterations = 300
         self.experiment_name = "unitree_go1_flat"
-        self.policy.actor_hidden_dims = [128, 128, 128]
-        self.policy.critic_hidden_dims = [128, 128, 128]
+        self.policy.actor_hidden_dims = [512, 256, 128]
+        self.policy.critic_hidden_dims = [512, 256, 128]

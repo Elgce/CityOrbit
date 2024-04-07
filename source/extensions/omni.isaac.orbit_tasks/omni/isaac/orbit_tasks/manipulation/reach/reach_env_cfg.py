@@ -95,16 +95,20 @@ class ActionsCfg:
 @configclass
 class ObservationsCfg:
     """Observation specifications for the MDP."""
-
+# obs -> network -> action
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group."""
 
         # observation terms (order preserved)
-        joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01)) 
+        # joint_pos = current_pos - default_pos   # rad
         joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
+        # joint_vel = current_vel - default_vel
         pose_command = ObsTerm(func=mdp.generated_commands, params={"command_name": "ee_pose"})
+        # generate_command
         actions = ObsTerm(func=mdp.last_action)
+        # action: set_target_joint_pos(action_scale * action + default_pos)
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -131,7 +135,7 @@ class RandomizationCfg:
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
-
+    # R = \sum{reward_scale * reward_val}
     # task terms
     end_effector_position_tracking = RewTerm(
         func=mdp.position_command_error,
