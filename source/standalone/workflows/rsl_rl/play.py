@@ -21,7 +21,7 @@ import cli_args  # isort: skip
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
 parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU pipeline.")
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Aliengo-Z1-v0", help="Name of the task.")
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
@@ -70,7 +70,7 @@ def main():
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
     # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
-    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-03-07_23-07-30/model_40000.pt" # relatively, 40000 is best
+    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/last/model_29998.pt" # relatively, 40000 is best
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model
