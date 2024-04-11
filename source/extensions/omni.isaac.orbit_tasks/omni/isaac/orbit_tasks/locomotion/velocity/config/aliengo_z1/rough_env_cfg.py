@@ -35,9 +35,9 @@ def base_height_terminate(
     env: RLTaskEnv,
 ) -> torch.Tensor:
     asset = env.scene["robot"]
-    height_scanner: RayCaster = env.scene["height_scanner"]
-    ground_height = height_scanner.data.ray_hits_w[:, :, 2].mean(dim=1)
-    relative_height = asset.data.root_pos_w[:, 2] - ground_height
+    # height_scanner: RayCaster = env.scene["height_scanner"]
+    # ground_height = height_scanner.data.ray_hits_w[:, :, 2].mean(dim=1)
+    relative_height = asset.data.root_pos_w[:, 2]# - ground_height
     return relative_height < 0.3
     
 
@@ -59,24 +59,30 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # randomization
         self.randomization.push_robot = None
-        self.randomization.add_base_mass.params["mass_range"] = (-1.0, 3.0)
-        self.randomization.add_base_mass.params["asset_cfg"].body_names = "trunk"
-        self.randomization.base_external_force_torque.params["asset_cfg"].body_names = "trunk"
-        self.randomization.reset_robot_joints.params["position_range"] = (1.0, 1.0)
-        self.randomization.reset_base.params = {
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
-            "velocity_range": {
-                "x": (0.0, 0.0),
-                "y": (0.0, 0.0),
-                "z": (0.0, 0.0),
-                "roll": (0.0, 0.0),
-                "pitch": (0.0, 0.0),
-                "yaw": (0.0, 0.0),
-            },
-        }
+        # self.randomization.add_base_mass.params["mass_range"] = (-1.0, 3.0)
+        # self.randomization.add_base_mass.params["asset_cfg"].body_names = "trunk"
+        # self.randomization.base_external_force_torque.params["asset_cfg"].body_names = "trunk"
+        # self.randomization.reset_robot_joints.params["position_range"] = (1.0, 1.0)
+        # self.randomization.reset_base.params = {
+        #     "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
+        #     "velocity_range": {
+        #         "x": (0.0, 0.0),
+        #         "y": (0.0, 0.0),
+        #         "z": (0.0, 0.0),
+        #         "roll": (0.0, 0.0),
+        #         "pitch": (0.0, 0.0),
+        #         "yaw": (0.0, 0.0),
+        #     },
+        # }
+        
+        self.randomization.add_base_mass = None
+        self.randomization.base_external_force_torque = None
+        self.randomization.reset_robot_joints = None
+        self.randomization.reset_base = None
+        self.randomization.physics_material = None
 
         # self-defined reward function
-        # self.rewards.base_height = RewTerm(func=base_height_l1, weight=-0.2)
+        self.rewards.base_height = RewTerm(func=base_height_l1, weight=-0.2)
         self.rewards.feet_air_time = RewTerm(
             func=mdp.feet_air_time,
             weight=0.5,
@@ -110,9 +116,9 @@ class AliengoZ1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         # self.rewards.action_rate_l2=None
         # terminations
         self.terminations.base_contact.params["sensor_cfg"].body_names = ".*trunk"
-        # self.terminations.base_height = DoneTerm(
-        #     func=base_height_terminate, 
-        # )
+        self.terminations.base_height = DoneTerm(
+            func=base_height_terminate, 
+        )
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
         self.curriculum.terrain_levels = None

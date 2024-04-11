@@ -45,6 +45,7 @@ def lin_vel_z_l2(env: RLTaskEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("rob
     """Penalize z-axis base linear velocity using L2-kernel."""
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
+    # import ipdb; ipdb.set_trace()
     return torch.square(asset.data.root_lin_vel_b[:, 2])
 
 

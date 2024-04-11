@@ -102,10 +102,10 @@ Note: Specifications taken from: https://www.trossenrobotics.com/a1-quadruped#sp
 ALIENGO_Z1_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         # usd_path=f"{PE_ASSET_PATH}/aliengoZ1.usd",
-        usd_path=f"{PE_ASSET_PATH}/aliengoZ1.usd",
+        usd_path=f"{PE_ASSET_PATH}/aliengoZ1_fixed_arm.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
-            disable_gravity=False,
+            disable_gravity=True,
             retain_accelerations=False,
             linear_damping=0.0,
             angular_damping=0.0,
@@ -118,7 +118,7 @@ ALIENGO_Z1_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.4),
+        pos=(0.0, 0.0, 0.6),
         joint_pos={
             ".*L_hip_joint": 0.1,
             ".*R_hip_joint": -0.1,

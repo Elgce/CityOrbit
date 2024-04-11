@@ -228,6 +228,7 @@ class ActuatorBase(ABC):
                 param[:] = float(default_value)
             elif isinstance(default_value, torch.Tensor):
                 # if tensor, then use the same tensor for all joints
+                
                 param[:] = default_value.float()
             else:
                 raise TypeError(f"Invalid type for default value: {type(default_value)}. Expected float or Tensor.")

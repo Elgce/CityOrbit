@@ -16,7 +16,7 @@ from omni.isaac.orbit.app import AppLauncher
 
 # local imports
 import cli_args  # isort: skip
-
+import numpy as np
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
 parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU pipeline.")
@@ -53,8 +53,10 @@ from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
     export_policy_as_onnx,
 )
 
+get_data = False
 
 def main():
+    saved_action = np.load("/home/elgceben/orbit/action.npy")
     """Play with RSL-RL agent."""
     # parse configuration
     env_cfg = parse_env_cfg(args_cli.task, use_gpu=not args_cli.cpu, num_envs=args_cli.num_envs)
@@ -64,20 +66,20 @@ def main():
     env = gym.make(args_cli.task, cfg=env_cfg)
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env)
+    saved_action = torch.tensor(saved_action, device=env.device, dtype=torch.float).reshape(-1, 12)
 
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
     # resume_path = get_checkpoint_path(log_root_path, agent_cfg.load_run, agent_cfg.load_checkpoint)
-    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/2024-04-09_23-14-31/model_29999.pt" # relatively, 40000 is best
+    resume_path = "/home/elgceben/orbit/logs/rsl_rl/aliengo_z1_rough/fix_arm/model_29999.pt" # relatively, 40000 is best
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model
     ppo_runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
     ppo_runner.load(resume_path)
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
-
     # obtain the trained policy for inference
     policy = ppo_runner.get_inference_policy(device=env.unwrapped.device)
 
@@ -88,13 +90,51 @@ def main():
     # reset environment
     obs, _ = env.get_observations()
     # simulate environment
+    i = 0
+    action_list = []
+    position_list = []
+    velocity_list = []
+    obs_list = []
     while simulation_app.is_running():
         # run everything in inference mode
         with torch.inference_mode():
             # agent stepping
-            actions = policy(obs)
+            if get_data:
+                obs_list.append(obs.cpu().numpy())
+                obs[:, 9:12] = torch.tensor([0.4, 0.0, 0.0], device=env.device, dtype=torch.float)
+                actions = policy(obs)
+                obs_list.append(obs.cpu().numpy())
+            # if i >= 100:
+            if not get_data:
+                actions = torch.zeros((env.num_envs, 12), device=env.device, dtype=torch.float)
+                
+                actions[:, :] = saved_action[i, :]
+                obs[:, 9:12] = torch.tensor([0.4, 0.0, 0.0], device=env.device, dtype=torch.float)
+                obs_list.append(obs.cpu().numpy())
             # env stepping
             obs, _, _, _ = env.step(actions)
+            
+            action_list.append(actions.cpu().numpy())
+            position_list.append(obs[:, 12:31].cpu().numpy())
+            velocity_list.append(obs[:, 31:50].cpu().numpy())
+            
+        i += 1
+        if get_data:
+            if i == 1200:
+                np.save("action.npy", np.array(action_list))
+                np.save("position.npy", np.array(position_list))
+                np.save("velocity.npy", np.array(velocity_list))
+                np.save("obs.npy", np.array(obs_list))
+                print(velocity_list)
+                print("done")
+        if not get_data:
+            if i == 1000:
+                np.save("fix_position.npy", np.array(position_list))
+                np.save("fix_velocity.npy", np.array(velocity_list))
+                np.save("fix_obs.npy", np.array(obs_list))
+                print("done")
+                
+            
 
     # close the simulator
     env.close()
